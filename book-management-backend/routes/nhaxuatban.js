@@ -16,10 +16,10 @@ router.get("/", async (req, res) => {
 });
 
 // Lấy nhà xuất bản theo mã (maNXB)
-router.get("/:maNXB", async (req, res) => {
+router.get("/:MANXB", async (req, res) => {
   try {
     const nhaXuatBan = await nhaXuatBanCollection.findOne({
-      maNXB: req.params.maNXB,
+      MANXB: req.params.MANXB,
     });
     if (!nhaXuatBan) {
       return res.status(404).json({ message: "Không tìm thấy nhà xuất bản" });
@@ -37,7 +37,7 @@ router.post("/", async (req, res) => {
 
     // Kiểm tra xem mã nhà xuất bản đã tồn tại chưa
     const existingNXB = await nhaXuatBanCollection.findOne({
-      maNXB: newNhaXuatBan.maNXB,
+      MANXB: newNhaXuatBan.MANXB,
     });
     if (existingNXB) {
       return res.status(400).json({ message: "Mã nhà xuất bản đã tồn tại" });
@@ -51,11 +51,11 @@ router.post("/", async (req, res) => {
 });
 
 // Cập nhật thông tin nhà xuất bản theo mã (maNXB)
-router.put("/:maNXB", async (req, res) => {
+router.put("/:MANXB", async (req, res) => {
   try {
     const updatedNXB = req.body;
     const result = await nhaXuatBanCollection.updateOne(
-      { maNXB: req.params.maNXB },
+      { MANXB: req.params.MANXB },
       { $set: updatedNXB }
     );
 
@@ -69,10 +69,10 @@ router.put("/:maNXB", async (req, res) => {
 });
 
 // Xóa nhà xuất bản theo mã (maNXB)
-router.delete("/:maNXB", async (req, res) => {
+router.delete("/:MANXB", async (req, res) => {
   try {
     const result = await nhaXuatBanCollection.deleteOne({
-      maNXB: req.params.maNXB,
+      MANXB: req.params.MANXB,
     });
 
     if (result.deletedCount === 0) {

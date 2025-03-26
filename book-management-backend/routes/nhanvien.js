@@ -17,10 +17,10 @@ router.get("/", async (req, res) => {
 });
 
 // Lấy nhân viên theo mã số (MSNV)
-router.get("/:MSNV", async (req, res) => {
+router.get("/:msnv", async (req, res) => {
   try {
     const nhanVien = await nhanVienCollection.findOne({
-      MSNV: req.params.MSNV,
+      msnv: req.params.MSNV,
     });
     if (!nhanVien) {
       return res.status(404).json({ message: "Không tìm thấy nhân viên" });
@@ -56,7 +56,7 @@ router.post("/", async (req, res) => {
 });
 
 // Cập nhật thông tin nhân viên theo mã số (MSNV)
-router.put("/:MSNV", async (req, res) => {
+router.put("/:msnv", async (req, res) => {
   try {
     const updatedNhanVien = req.body;
 
@@ -69,7 +69,7 @@ router.put("/:MSNV", async (req, res) => {
     }
 
     const result = await nhanVienCollection.updateOne(
-      { MSNV: req.params.MSNV },
+      { msnv: req.params.MSNV },
       { $set: updatedNhanVien }
     );
 
@@ -83,10 +83,10 @@ router.put("/:MSNV", async (req, res) => {
 });
 
 // Xóa nhân viên theo mã số (MSNV)
-router.delete("/:MSNV", async (req, res) => {
+router.delete("/:msnv", async (req, res) => {
   try {
     const result = await nhanVienCollection.deleteOne({
-      MSNV: req.params.MSNV,
+      msnv: req.params.MSNV,
     });
 
     if (result.deletedCount === 0) {

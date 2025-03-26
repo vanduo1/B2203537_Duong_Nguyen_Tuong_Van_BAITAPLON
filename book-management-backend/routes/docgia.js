@@ -31,7 +31,7 @@ router.post("/", async (req, res) => {
 router.get("/:maDocGia", async (req, res) => {
   try {
     const docGia = await docGiaCollection.findOne({
-      maDocGia: req.params.maDocGia,
+      maDocGia: req.params.MADOCGIA,
     });
     if (!docGia) {
       return res.status(404).json({ message: "Không tìm thấy độc giả" });
@@ -47,7 +47,7 @@ router.put("/:maDocGia", async (req, res) => {
   try {
     const updatedDocGia = req.body;
     const result = await docGiaCollection.updateOne(
-      { maDocGia: req.params.maDocGia },
+      { maDocGia: req.params.MADOCGIA },
       { $set: updatedDocGia }
     );
 
@@ -64,7 +64,7 @@ router.put("/:maDocGia", async (req, res) => {
 router.delete("/:maDocGia", async (req, res) => {
   try {
     const result = await docGiaCollection.deleteOne({
-      maDocGia: req.params.maDocGia,
+      maDocGia: req.params.MADOCGIA,
     });
 
     if (result.deletedCount === 0) {

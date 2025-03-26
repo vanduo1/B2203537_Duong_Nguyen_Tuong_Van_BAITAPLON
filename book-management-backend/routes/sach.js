@@ -29,7 +29,7 @@ router.post("/", async (req, res) => {
 // Lấy sách theo mã sách (maSach)
 router.get("/:maSach", async (req, res) => {
   try {
-    const book = await sachCollection.findOne({ maSach: req.params.maSach });
+    const book = await sachCollection.findOne({ maSach: req.params.MASACH });
     if (!book) {
       return res.status(404).json({ message: "Không tìm thấy sách" });
     }
@@ -44,7 +44,7 @@ router.put("/:maSach", async (req, res) => {
   try {
     const updatedBook = req.body;
     const result = await sachCollection.updateOne(
-      { maSach: req.params.maSach },
+      { maSach: req.params.MASACH },
       { $set: updatedBook }
     );
 
@@ -61,7 +61,7 @@ router.put("/:maSach", async (req, res) => {
 router.delete("/:maSach", async (req, res) => {
   try {
     const result = await sachCollection.deleteOne({
-      maSach: req.params.maSach,
+      maSach: req.params.MASACH,
     });
 
     if (result.deletedCount === 0) {
