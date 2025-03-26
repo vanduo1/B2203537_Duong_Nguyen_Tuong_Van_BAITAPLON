@@ -12,6 +12,7 @@ app.use(express.json());
 connectDB();
 
 // Routes
+app.use("/login", require("./routes/login"));
 app.use("/api/sach", require("./routes/sach"));
 app.use("/api/docgia", require("./routes/docgia"));
 app.use("/api/nhaxuatban", require("./routes/nhaxuatban"));

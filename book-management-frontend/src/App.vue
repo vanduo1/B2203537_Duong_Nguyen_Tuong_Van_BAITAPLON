@@ -6,6 +6,7 @@
         <router-link to="/" class="px-4 hover:underline">Trang chủ</router-link>
         <router-link to="/books" class="px-4 hover:underline">Sách</router-link>
         <router-link to="/borrows" class="px-4 hover:underline">Mượn sách</router-link>
+        <router-link to="/login" class="px-4 hover:underline">Login</router-link>
       </div>
     </nav>
 

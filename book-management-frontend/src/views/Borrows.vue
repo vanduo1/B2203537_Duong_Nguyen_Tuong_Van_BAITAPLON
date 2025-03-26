@@ -98,7 +98,7 @@ export default {
     async deleteBorrow(MADOCGIA, MASACH) {
       if (confirm('Bạn có chắc chắn muốn xóa lượt mượn này?')) {
         try {
-          await axios.delete(`http://localhost:5000/api/theodoimuonsach/${MADOCGIA}${MASACH}`)
+          await axios.delete(`http://localhost:5000/api/theodoimuonsach/${MADOCGIA}/${MASACH}`)
           this.fetchBorrows()
         } catch (error) {
           console.error('Lỗi khi xóa lượt mượn:', error)
@@ -117,7 +117,7 @@ export default {
         }
 
         await axios.put(
-          `http://localhost:5000/api/theodoimuonsach/${this.newBorrow.MADOCGIA}${this.newBorrow.MASACH}`,
+          `http://localhost:5000/api/theodoimuonsach/${this.newBorrow.MADOCGIA}/${this.newBorrow.MASACH}`,
           updatedBorrow,
         )
 
