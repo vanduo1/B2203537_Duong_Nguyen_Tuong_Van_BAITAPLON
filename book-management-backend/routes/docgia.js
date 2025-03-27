@@ -31,7 +31,7 @@ router.post("/", async (req, res) => {
 router.get("/:maDocGia", async (req, res) => {
   try {
     const docGia = await docGiaCollection.findOne({
-      maDocGia: req.params.MADOCGIA,
+      MADOCGIA: req.params.maDocGia,
     });
     if (!docGia) {
       return res.status(404).json({ message: "Không tìm thấy độc giả" });

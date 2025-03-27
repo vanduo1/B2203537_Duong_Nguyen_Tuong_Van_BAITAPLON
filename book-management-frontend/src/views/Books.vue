@@ -27,7 +27,14 @@
           <td class="border p-2">{{ book.MASACH }}</td>
           <td class="border p-2">{{ book.TENSACH }}</td>
           <td class="border p-2">{{ book.DONGIA }} VNĐ</td>
-          <td class="border p-2">{{ book.SOQUYEN }}</td>
+          <td class="border p-2">
+            <span v-if="book.SOQUYEN === 0">
+              "Hiện tại sách đã hết. <br />Bạn có thể mượn vào ngày <br />
+              <span class="text-red-500">{{ formatDate(book.NGAYTRA) }}</span> khi sách được trả
+              về."
+            </span>
+            <span v-else>{{ book.SOQUYEN }}</span>
+          </td>
           <td class="border p-2">{{ book.NAMXUATBAN }}</td>
           <td class="border p-2">{{ book.MANXB }}</td>
           <td class="border p-2">{{ book.TACGIA }}</td>
@@ -111,10 +118,24 @@ export default {
     },
   },
   methods: {
+    formatDate(date) {
+      return date ? new Date(date).toLocaleDateString('vi-VN') : 'Chưa trả'
+    },
+
     async fetchBooks() {
       try {
         const response = await axios.get('http://localhost:5000/api/sach')
         this.books = response.data
+
+        // Nếu sách hết (SOQUYEN === 0), gọi API để lấy ngày trả gần nhất
+        for (let book of this.books) {
+          if (book.SOQUYEN === 0) {
+            const returnDateRes = await axios.get(
+              `http://localhost:5000/api/theodoimuonsach/next-return/${book.MASACH}`,
+            )
+            book.NGAYTRA = returnDateRes.data.nextReturnDate || 'Chưa có lịch trả sách sắp tới'
+          }
+        }
       } catch (error) {
         console.error('Lỗi tải sách:', error)
       }

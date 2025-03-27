@@ -43,6 +43,7 @@
         <input v-model="newBorrow.MADOCGIA" type="text" placeholder="Mã Độc Giả" class="input" />
         <input v-model="newBorrow.MASACH" type="text" placeholder="Mã Sách" class="input" />
         <input v-model="newBorrow.NGAYMUON" type="date" class="input" />
+
         <input
           v-if="isEditing"
           v-model="newBorrow.NGAYTRA"
@@ -94,15 +95,65 @@ export default {
         console.error('Lỗi tải danh sách mượn sách:', error)
       }
     },
-    async addBorrow() {
+
+    //kiem tra ma doc gia truoc khi muon
+    async checkReaderExists(MADOCGIA) {
       try {
-        await axios.post('http://localhost:5000/api/theodoimuonsach', this.newBorrow)
-        this.fetchBorrows()
+        const response = await axios.get(`http://localhost:5000/api/docgia/${MADOCGIA}`)
+        return response.data // Trả về `true` nếu độc giả tồn tại, `false` nếu không
+      } catch (error) {
+        console.error('Lỗi kiểm tra mã độc giả:', error)
+        return false
+      }
+    },
+
+    async checkBookExists(MASACH) {
+      try {
+        const response = await axios.get(`http://localhost:5000/api/sach/${MASACH}`)
+        return response.data // Trả về `true` nếu sách tồn tại, `false` nếu không
+      } catch (error) {
+        console.error('Lỗi kiểm tra mã sách:', error)
+        return false
+      }
+    },
+
+    async addBorrow() {
+      if (!this.newBorrow.MADOCGIA || !this.newBorrow.MASACH || !this.newBorrow.NGAYMUON) {
+        alert('Vui lòng nhập đầy đủ thông tin!')
+        return
+      }
+
+      // Kiểm tra độc giả có tồn tại không
+      const readerExists = await this.checkReaderExists(this.newBorrow.MADOCGIA)
+      if (!readerExists) {
+        alert('Mã độc giả không tồn tại! Vui lòng kiểm tra lại.')
+        return
+      }
+
+      // Kiểm tra sách có tồn tại không
+      const book = await this.checkBookExists(this.newBorrow.MASACH)
+      if (!book) {
+        alert('Mã sách không tồn tại! Vui lòng kiểm tra lại.')
+        return
+      }
+
+      // Kiểm tra số lượng sách
+      if (book.SOQUYEN <= 0) {
+        alert('Sách đã hết, không thể mượn!')
+        return
+      }
+
+      try {
+        await axios.post('http://localhost:5000/api/theodoimuonsach/', this.newBorrow)
+        this.fetchBorrows() // Tải lại danh sách
+        alert('Mượn sách thành công!')
         this.closeModal()
       } catch (error) {
         console.error('Lỗi khi thêm lượt mượn:', error)
+        alert(error.response?.data?.message || 'Lỗi hệ thống, thử lại sau!')
       }
     },
+
     async deleteBorrow(MADOCGIA, MASACH) {
       if (confirm('Bạn có chắc chắn muốn xóa lượt mượn này?')) {
         try {
@@ -140,9 +191,17 @@ export default {
     formatDate(date) {
       return date ? new Date(date).toLocaleDateString('vi-VN') : 'Chưa trả'
     },
+
     openModal() {
       this.isEditing = false
-      this.newBorrow = { MADOCGIA: '', MASACH: '', NGAYMUON: '', NGAYTRA: '' }
+
+      this.newBorrow = {
+        MADOCGIA: '',
+        MASACH: '',
+        NGAYMUON: '',
+        NGAYTRA: '',
+      }
+
       this.showModal = true
     },
     closeModal() {

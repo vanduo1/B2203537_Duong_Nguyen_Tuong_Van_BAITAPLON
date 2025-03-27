@@ -34,7 +34,7 @@ export default {
           HoTenNV: response.data.HoTenNV,
         })
 
-        this.$router.push(response.data.ChucVu === 'nhanvien' ? '/staff' : '/books')
+        this.$router.push(response.data.ChucVu === 'nhanvien' ? '/borrows' : '/books')
       } catch (error) {
         console.error('Đăng nhập thất bại:', error)
       }

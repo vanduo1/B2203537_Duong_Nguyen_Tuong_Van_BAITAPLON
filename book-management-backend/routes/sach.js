@@ -29,7 +29,7 @@ router.post("/", async (req, res) => {
 // Lấy sách theo mã sách (maSach)
 router.get("/:maSach", async (req, res) => {
   try {
-    const book = await sachCollection.findOne({ maSach: req.params.MASACH });
+    const book = await sachCollection.findOne({ MASACH: req.params.maSach });
     if (!book) {
       return res.status(404).json({ message: "Không tìm thấy sách" });
     }
