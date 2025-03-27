@@ -1,87 +1,165 @@
 <template>
-  <div class="p-6">
-    <h1 class="text-2xl font-bold text-gray-800 mb-4">📚 Danh Sách Sách</h1>
+  <div class="p-32">
+    <h1 class="text-3xl font-bold text-gray-800 mb-4 text-center">
+      <i class="fa-solid fa-book"></i> Danh Sách Sách
+    </h1>
     <!-- Thanh tìm kiếm -->
+
     <input
       v-model="searchQuery"
       type="text"
-      placeholder="🔍 Tìm kiếm theo Mã Sách hoặc Tên Sách..."
-      class="input mb-4 w-full"
+      placeholder=" 🔎 Tìm kiếm theo Mã Sách hoặc Tên Sách..."
+      class="input m-4 w-full p-3 rounded-full"
     />
+
     <!-- Nút tải danh sách sách -->
-    <button @click="fetchBooks" class="btn mb-4">🔄 Tải danh sách</button>
+    <button
+      @click="fetchBooks"
+      class="font-extrabold my-4 mx-8 p-2 border-2 rounded-full py-2 px-5 border-c3 hover:bg-c3 hover:text-c1 transition ease-in-out duration-300"
+    >
+      <i class="fa-solid fa-rotate pr-4"></i>Tải danh sách
+    </button>
 
     <!-- Chỉ Admin và Nhân viên mới được thêm sách -->
-    <button v-if="isAdmin" @click="openModal" class="btn btn-add mb-4">➕ Thêm Sách</button>
+    <button
+      v-if="isAdmin"
+      @click="openModal"
+      class="font-extrabold text-c4 my-4 p-2 border-2 rounded-full py-2 px-5 border-c4 hover:bg-c4 hover:text-white transition ease-in-out duration-300"
+    >
+      <i class="fa-solid fa-plus"></i> Thêm Sách
+    </button>
 
     <!-- Bảng hiển thị sách -->
-    <table class="w-full border-collapse border border-gray-300">
-      <thead>
-        <tr class="bg-gray-100">
-          <th class="border p-2">Mã Sách</th>
-          <th class="border p-2">Tên Sách</th>
-          <th class="border p-2">Đơn Giá</th>
-          <th class="border p-2">Số Quyển</th>
-          <th class="border p-2">Năm XB</th>
-          <th class="border p-2">Mã NXB</th>
-          <th class="border p-2">Nguồn Gốc/Tác Giả</th>
-          <th class="border p-2">Hành động</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="book in filteredBooks" :key="book.MASACH" class="text-center">
-          <td class="border p-2">{{ book.MASACH }}</td>
-          <td class="border p-2">{{ book.TENSACH }}</td>
-          <td class="border p-2">{{ book.DONGIA }} VNĐ</td>
-          <td class="border p-2">
-            <span v-if="book.SOQUYEN === 0"> "Hiện tại sách đã hết!" </span>
-            <span v-else>{{ book.SOQUYEN }}</span>
-          </td>
-          <td class="border p-2">{{ book.NAMXUATBAN }}</td>
-          <td class="border p-2">{{ book.MANXB }}</td>
-          <td class="border p-2">{{ book.TACGIA }}</td>
-          <td class="border p-2">
-            <!-- Chỉ Admin và Nhân viên mới có quyền sửa -->
-            <button v-if="isAdmin" @click="editBook(book)" class="btn btn-edit">✏ Sửa</button>
+    <div class="overflow-x-auto m-8">
+      <table class="w-full border border-gray-300 shadow-md rounded-lg overflow-hidden">
+        <thead>
+          <tr class="bg-c1 text-c3 font-extrabold uppercase text-sm leading-normal">
+            <th class="py-3 px-6 text-left">Mã Sách</th>
+            <th class="py-3 px-6 text-left">Tên Sách</th>
+            <th class="py-3 px-6 text-center">Đơn Giá</th>
+            <th class="py-3 px-6 text-center">Số Quyển</th>
+            <th class="py-3 px-6 text-center">Năm XB</th>
+            <th class="py-3 px-6 text-center">Mã NXB</th>
+            <th class="py-3 px-6 text-center">Tác Giả</th>
+            <th class="py-3 px-6 text-center">Hành động</th>
+          </tr>
+        </thead>
+        <tbody class="text-gray-700 text-sm font-normal">
+          <tr
+            v-for="book in filteredBooks"
+            :key="book.MASACH"
+            class="border-b border-gray-200 hover:bg-gray-100 transition duration-200"
+          >
+            <td class="py-3 px-6 text-left">{{ book.MASACH }}</td>
+            <td class="py-3 px-6 text-left">{{ book.TENSACH }}</td>
+            <td class="py-3 px-6 text-center">{{ book.DONGIA }} VNĐ</td>
+            <td class="py-3 px-6 text-center">
+              <span v-if="book.SOQUYEN === 0" class="text-red-500">Hết sách</span>
+              <span v-else>{{ book.SOQUYEN }}</span>
+            </td>
+            <td class="py-3 px-6 text-center">{{ book.NAMXUATBAN }}</td>
+            <td class="py-3 px-6 text-center">{{ book.MANXB }}</td>
+            <td class="py-3 px-6 text-center">{{ book.TACGIA }}</td>
+            <td class="py-3 px-6 text-center">
+              <!-- Chỉ Admin mới có quyền sửa -->
+              <button
+                v-if="isAdmin"
+                @click="editBook(book)"
+                class="text-c3 font-bold hover:text-blue-700 mx-2 border-2 p-2 rounded-2xl"
+              >
+                ✏ Sửa
+              </button>
 
-            <!-- Chỉ Admin mới có quyền xóa -->
-            <button v-if="isAdmin" @click="deleteBook(book.MASACH)" class="btn btn-delete">
-              🗑 Xóa
-            </button>
-            <!-- 👀 Nếu là nhân viên, hiển thị trạng thái "Chỉ đọc" -->
-            <span v-if="!isAdmin" class="text-gray-500">🔒 Chỉ đọc</span>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+              <!-- Chỉ Admin mới có quyền xóa -->
+              <button
+                v-if="isAdmin"
+                @click="deleteBook(book.MASACH)"
+                class="text-red-700 font-bold hover:text-red-400 mx-2 p-2 border-2 rounded-2xl"
+              >
+                🗑 Xóa
+              </button>
+
+              <!-- Nhân viên chỉ có quyền xem -->
+              <span v-if="!isAdmin" class="text-gray-500">🔒 Chỉ đọc</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
     <!-- Form thêm / sửa sách -->
-    <div v-if="showModal" class="modal">
-      <div class="modal-content">
-        <h2 class="text-xl font-bold mb-4">
-          {{ isEditing ? '✏ Chỉnh Sửa Sách' : '➕ Thêm Sách' }}
+    <div
+      v-if="showModal"
+      class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-4"
+    >
+      <div class="bg-white p-6 rounded-2xl shadow-xl w-full max-w-md">
+        <h2 class="text-2xl font-bold mb-6 text-center text-gray-800">
+          {{ isEditing ? 'Chỉnh Sửa Sách' : 'Thêm Sách' }}
         </h2>
-        <input v-model="newBook.MASACH" type="text" placeholder="Mã Sách" class="input" />
-        <input v-model="newBook.TENSACH" type="text" placeholder="Tên Sách" class="input" />
-        <input v-model="newBook.DONGIA" type="number" placeholder="Đơn Giá" class="input" />
-        <input v-model="newBook.SOQUYEN" type="number" placeholder="Số Quyển" class="input" />
-        <input
-          v-model="newBook.NAMXUATBAN"
-          type="number"
-          placeholder="Năm Xuất Bản"
-          class="input"
-        />
-        <input v-model="newBook.MANXB" type="text" placeholder="Mã NXB" class="input" />
-        <input
-          v-model="newBook.TACGIA"
-          type="text"
-          placeholder="Nguồn Gốc / Tác Giả"
-          class="input"
-        />
 
-        <div class="flex justify-between">
-          <button @click="isEditing ? updateBook() : addBook()" class="btn">✔ Lưu</button>
-          <button @click="closeModal" class="btn btn-delete">✖ Hủy</button>
+        <div class="space-y-4">
+          <div class="relative">
+            <input v-model="newBook.MASACH" type="text" placeholder="Mã Sách" class="input-field" />
+          </div>
+
+          <div class="relative">
+            <input
+              v-model="newBook.TENSACH"
+              type="text"
+              placeholder="Tên Sách"
+              class="input-field"
+            />
+          </div>
+
+          <div class="relative">
+            <input
+              v-model="newBook.DONGIA"
+              type="number"
+              placeholder="Đơn Giá"
+              class="input-field"
+            />
+          </div>
+
+          <div class="relative">
+            <input
+              v-model="newBook.SOQUYEN"
+              type="number"
+              placeholder="Số Quyển"
+              class="input-field"
+            />
+          </div>
+
+          <div class="relative">
+            <input
+              v-model="newBook.NAMXUATBAN"
+              type="number"
+              placeholder="Năm Xuất Bản"
+              class="input-field"
+            />
+          </div>
+
+          <div class="relative">
+            <input v-model="newBook.MANXB" type="text" placeholder="Mã NXB" class="input-field" />
+          </div>
+
+          <div class="relative">
+            <input v-model="newBook.TACGIA" type="text" placeholder="Tác Giả" class="input-field" />
+          </div>
+        </div>
+
+        <div class="flex justify-between mt-6">
+          <button
+            @click="isEditing ? updateBook() : addBook()"
+            class="bg-c2 text-white px-4 py-2 rounded-full hover:bg-blue-700 transition"
+          >
+            ✔ Lưu
+          </button>
+          <button
+            @click="closeModal"
+            class="bg-red-700 text-white px-4 py-2 rounded-full hover:bg-red-800 transition"
+          >
+            ✖ Hủy
+          </button>
         </div>
       </div>
     </div>
@@ -233,31 +311,7 @@ export default {
 </script>
 
 <style scoped>
-.btn {
-  @apply bg-blue-500 text-white px-4 py-2 rounded-lg shadow-md hover:bg-blue-700 transition;
-}
-
-.btn-add {
-  @apply bg-green-500 hover:bg-green-700;
-}
-
-.btn-edit {
-  @apply bg-yellow-500 hover:bg-yellow-700 mx-1;
-}
-
-.btn-delete {
-  @apply bg-red-500 hover:bg-red-700;
-}
-
-.input {
-  @apply w-full border p-2 mb-2 rounded-lg;
-}
-
-.modal {
-  @apply fixed top-0 left-0 w-full h-full flex items-center justify-center bg-gray-900 bg-opacity-50;
-}
-
-.modal-content {
-  @apply bg-white p-6 rounded-lg shadow-lg w-96;
+.input-field {
+  @apply w-full px-4 py-2 border rounded-full focus:ring-2 focus:ring-blue-400 focus:outline-none transition;
 }
 </style>

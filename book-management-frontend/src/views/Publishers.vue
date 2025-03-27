@@ -1,47 +1,60 @@
 <template>
-  <div class="p-6">
-    <h1 class="text-2xl font-bold text-gray-800 mb-4">🏢 Danh Sách Nhà Xuất Bản</h1>
+  <div class="p-6 bg-gray-50 min-h-screen">
+    <h1 class="text-3xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+      🏢 Danh Sách Nhà Xuất Bản
+    </h1>
+
     <!-- Ô tìm kiếm -->
-    <input
-      v-model="searchQuery"
-      type="text"
-      placeholder="🔍 Tìm kiếm nhà xuất bản..."
-      class="input mb-4 w-full"
-    />
-    <!-- 🔒 Chỉ admin mới thấy nút thêm -->
-    <button v-if="isAdmin" @click="openModal" class="btn btn-add mb-4">➕ Thêm Nhà Xuất Bản</button>
+    <div class="flex items-center gap-2 mb-4">
+      <input
+        v-model="searchQuery"
+        type="text"
+        placeholder="🔍 Tìm kiếm nhà xuất bản..."
+        class="input w-full"
+      />
+      <!-- 🔒 Chỉ admin mới thấy nút thêm -->
+      <button v-if="isAdmin" @click="openModal" class="btn btn-add">➕ Thêm</button>
+    </div>
 
-    <table class="w-full border-collapse border border-gray-300">
-      <thead>
-        <tr class="bg-gray-100">
-          <th class="border p-2">Mã NXB</th>
-          <th class="border p-2">Tên NXB</th>
-          <th class="border p-2">Địa Chỉ</th>
-          <th class="border p-2">Hành động</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="publisher in filteredPublishers" :key="publisher.MANXB" class="text-center">
-          <td class="border p-2">{{ publisher.MANXB }}</td>
-          <td class="border p-2">{{ publisher.TENNXB }}</td>
-          <td class="border p-2">{{ publisher.DIACHI }}</td>
-          <td class="border p-2">
-            <!-- 🔒 Chỉ admin mới thấy các nút sửa / xóa -->
-            <button v-if="isAdmin" @click="editPublisher(publisher)" class="btn btn-edit">
-              ✏ Sửa
-            </button>
-            <button v-if="isAdmin" @click="deletePublisher(publisher.MANXB)" class="btn btn-delete">
-              🗑 Xóa
-            </button>
+    <!-- Bảng danh sách -->
+    <div class="overflow-x-auto bg-white shadow-md rounded-lg">
+      <table class="w-full border-collapse">
+        <thead>
+          <tr class="bg-blue-500 text-white">
+            <th class="border p-3">Mã NXB</th>
+            <th class="border p-3">Tên NXB</th>
+            <th class="border p-3">Địa Chỉ</th>
+            <th class="border p-3">Hành động</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            v-for="publisher in filteredPublishers"
+            :key="publisher.MANXB"
+            class="hover:bg-gray-100 transition"
+          >
+            <td class="border p-3 text-center">{{ publisher.MANXB }}</td>
+            <td class="border p-3 text-center">{{ publisher.TENNXB }}</td>
+            <td class="border p-3 text-center">{{ publisher.DIACHI }}</td>
+            <td class="border p-3 text-center">
+              <button v-if="isAdmin" @click="editPublisher(publisher)" class="btn btn-edit">
+                ✏ Sửa
+              </button>
+              <button
+                v-if="isAdmin"
+                @click="deletePublisher(publisher.MANXB)"
+                class="btn btn-delete"
+              >
+                🗑 Xóa
+              </button>
+              <span v-if="!isAdmin" class="text-gray-500">🔒 Chỉ đọc</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
-            <!-- 👀 Nếu là nhân viên, hiển thị trạng thái "Chỉ đọc" -->
-            <span v-if="!isAdmin" class="text-gray-500">🔒 Chỉ đọc</span>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-
-    <!-- Form thêm / sửa nhà xuất bản (chỉ admin mới mở được) -->
+    <!-- Form thêm / sửa nhà xuất bản (chỉ admin) -->
     <div v-if="showModal && isAdmin" class="modal">
       <div class="modal-content">
         <h2 class="text-xl font-bold mb-4">
@@ -57,7 +70,7 @@
         <input v-model="newPublisher.TENNXB" type="text" placeholder="Tên NXB" class="input" />
         <input v-model="newPublisher.DIACHI" type="text" placeholder="Địa Chỉ" class="input" />
 
-        <div class="flex justify-between">
+        <div class="flex justify-between mt-4">
           <button @click="isEditing ? updatePublisher() : addPublisher()" class="btn">
             ✔ Lưu
           </button>
@@ -77,7 +90,7 @@ export default {
   computed: {
     ...mapState(['ChucVu']),
     isAdmin() {
-      return this.ChucVu === 'quanly' // ✅ Kiểm tra quyền admin
+      return this.ChucVu === 'quanly'
     },
     filteredPublishers() {
       return this.publishers.filter(
@@ -90,7 +103,7 @@ export default {
   data() {
     return {
       publishers: [],
-      searchQuery: '', // Biến tìm kiếm
+      searchQuery: '',
       showModal: false,
       isEditing: false,
       newPublisher: { MANXB: '', TENNXB: '', DIACHI: '' },
@@ -121,7 +134,7 @@ export default {
       }
     },
     async deletePublisher(id) {
-      if (!this.isAdmin) return // 🔒 Chặn nhân viên thực hiện xóa
+      if (!this.isAdmin) return
       if (confirm('Bạn có chắc chắn muốn xóa nhà xuất bản này?')) {
         try {
           await axios.delete(`http://localhost:5000/api/nhaxuatban/${id}`)
@@ -134,13 +147,13 @@ export default {
       }
     },
     editPublisher(publisher) {
-      if (!this.isAdmin) return // 🔒 Chặn nhân viên sửa
+      if (!this.isAdmin) return
       this.isEditing = true
       this.newPublisher = { ...publisher }
       this.showModal = true
     },
     openModal() {
-      if (!this.isAdmin) return // 🔒 Chặn nhân viên mở form thêm
+      if (!this.isAdmin) return
       this.isEditing = false
       this.newPublisher = { MANXB: '', TENNXB: '', DIACHI: '' }
       this.showModal = true
@@ -157,7 +170,7 @@ export default {
 
 <style scoped>
 .btn {
-  @apply bg-blue-500 text-white px-4 py-2 rounded-lg shadow-md hover:bg-blue-700 transition;
+  @apply bg-blue-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-blue-700 transition;
 }
 
 .btn-add {
@@ -173,11 +186,11 @@ export default {
 }
 
 .input {
-  @apply w-full border p-2 mb-2 rounded-lg;
+  @apply w-full border p-3 rounded-lg focus:ring-2 focus:ring-blue-400;
 }
 
 .modal {
-  @apply fixed top-0 left-0 w-full h-full flex items-center justify-center bg-gray-900 bg-opacity-50;
+  @apply fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50;
 }
 
 .modal-content {

@@ -1,66 +1,128 @@
 <template>
-  <div class="p-6">
-    <h1 class="text-2xl font-bold text-gray-800 mb-4">📚 Theo Dõi Mượn Sách</h1>
+  <div class="p-32">
+    <h1 class="text-3xl font-bold text-gray-800 mb-4 text-center">
+      <i class="fa-solid fa-book-open"></i> Theo Dõi Mượn Sách
+    </h1>
+
     <!-- Thanh tìm kiếm -->
     <input
       v-model="searchQuery"
       type="text"
-      placeholder="🔍 Tìm kiếm theo Mã Độc Giả..."
-      class="input mb-4 w-full"
+      placeholder="🔎 Tìm kiếm theo Mã Độc Giả..."
+      class="input m-4 w-full p-3 rounded-full"
     />
+
     <!-- Nút tải danh sách và thêm mới -->
-    <button @click="fetchBorrows" class="btn mb-4">🔄 Tải danh sách</button>
-    <button v-if="isLoggedIn" @click="openModal" class="btn btn-add mb-4">➕ Thêm Lượt Mượn</button>
+    <button
+      @click="fetchBorrows"
+      class="font-extrabold my-4 mx-8 p-2 border-2 rounded-full py-2 px-5 border-c3 hover:bg-c3 hover:text-c1 transition ease-in-out duration-300"
+    >
+      <i class="fa-solid fa-rotate pr-4"></i>Tải danh sách
+    </button>
+
+    <button
+      v-if="isLoggedIn"
+      @click="openModal"
+      class="font-extrabold text-c4 my-4 p-2 border-2 rounded-full py-2 px-5 border-c4 hover:bg-c4 hover:text-white transition ease-in-out duration-300"
+    >
+      <i class="fa-solid fa-plus"></i> Thêm Lượt Mượn
+    </button>
 
     <!-- Bảng hiển thị lịch sử mượn sách -->
-    <table class="w-full border-collapse border border-gray-300">
-      <thead>
-        <tr class="bg-gray-100">
-          <th class="border p-2">Mã Độc Giả</th>
-          <th class="border p-2">Mã Sách</th>
-          <th class="border p-2">Ngày Mượn</th>
-          <th class="border p-2">Ngày Trả</th>
-          <th v-if="isLoggedIn" class="border p-2">Hành động</th>
-          <!-- Ẩn nếu chưa đăng nhập -->
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="borrow in filteredBorrows" :key="borrow._id" class="text-center">
-          <td class="border p-2">{{ borrow.MADOCGIA }}</td>
-          <td class="border p-2">{{ borrow.MASACH }}</td>
-          <td class="border p-2">{{ formatDate(borrow.NGAYMUON) }}</td>
-          <td class="border p-2">{{ borrow.NGAYTRA ? formatDate(borrow.NGAYTRA) : 'Chưa trả' }}</td>
-          <td v-if="isLoggedIn" class="border p-2">
-            <button @click="editBorrow(borrow)" class="btn btn-edit">✏ Cập nhật</button>
-            <button @click="deleteBorrow(borrow.MADOCGIA, borrow.MASACH)" class="btn btn-delete">
-              🗑 Xóa
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="overflow-x-auto m-8">
+      <table class="w-full border border-gray-300 shadow-md rounded-lg overflow-hidden">
+        <thead>
+          <tr class="bg-c1 text-c3 font-extrabold uppercase text-sm leading-normal">
+            <th class="py-3 px-6 text-left">Mã Độc Giả</th>
+            <th class="py-3 px-6 text-left">Mã Sách</th>
+            <th class="py-3 px-6 text-center">Ngày Mượn</th>
+            <th class="py-3 px-6 text-center">Ngày Trả</th>
+            <th v-if="isLoggedIn" class="py-3 px-6 text-center">Hành động</th>
+          </tr>
+        </thead>
+        <tbody class="text-gray-700 text-sm font-normal">
+          <tr
+            v-for="borrow in filteredBorrows"
+            :key="borrow._id"
+            class="border-b border-gray-200 hover:bg-gray-100 transition duration-200"
+          >
+            <td class="py-3 px-6 text-left">{{ borrow.MADOCGIA }}</td>
+            <td class="py-3 px-6 text-left">{{ borrow.MASACH }}</td>
+            <td class="py-3 px-6 text-center">{{ formatDate(borrow.NGAYMUON) }}</td>
+            <td class="py-3 px-6 text-center">
+              <span v-if="!borrow.NGAYTRA" class="text-red-500">Chưa trả</span>
+              <span v-else>{{ formatDate(borrow.NGAYTRA) }}</span>
+            </td>
+            <td v-if="isLoggedIn" class="py-3 px-6 text-center">
+              <button
+                @click="editBorrow(borrow)"
+                class="text-c3 font-bold hover:text-blue-700 mx-2 border-2 p-2 rounded-2xl"
+              >
+                ✏ Cập nhật
+              </button>
+              <button
+                @click="deleteBorrow(borrow.MADOCGIA, borrow.MASACH)"
+                class="text-red-700 font-bold hover:text-red-400 mx-2 p-2 border-2 rounded-2xl"
+              >
+                🗑 Xóa
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
     <!-- Form thêm / cập nhật lượt mượn -->
-    <div v-if="showModal" class="modal">
-      <div class="modal-content">
-        <h2 class="text-xl font-bold mb-4">
-          {{ isEditing ? '✏ Cập Nhật Lượt Mượn' : '➕ Thêm Lượt Mượn' }}
+    <div
+      v-if="showModal"
+      class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-4"
+    >
+      <div class="bg-white p-6 rounded-2xl shadow-xl w-full max-w-md">
+        <h2 class="text-2xl font-bold mb-6 text-center text-gray-800">
+          {{ isEditing ? 'Cập Nhật Lượt Mượn' : 'Thêm Lượt Mượn' }}
         </h2>
-        <input v-model="newBorrow.MADOCGIA" type="text" placeholder="Mã Độc Giả" class="input" />
-        <input v-model="newBorrow.MASACH" type="text" placeholder="Mã Sách" class="input" />
-        <input v-model="newBorrow.NGAYMUON" type="date" class="input" />
 
-        <input
-          v-if="isEditing"
-          v-model="newBorrow.NGAYTRA"
-          type="date"
-          class="input"
-          placeholder="Ngày Trả"
-        />
+        <div class="space-y-4">
+          <div class="relative">
+            <input
+              v-model="newBorrow.MADOCGIA"
+              type="text"
+              placeholder="Mã Độc Giả"
+              class="input-field"
+            />
+          </div>
 
-        <div class="flex justify-between">
-          <button @click="isEditing ? updateBorrow() : addBorrow()" class="btn">✔ Lưu</button>
-          <button @click="closeModal" class="btn btn-delete">✖ Hủy</button>
+          <div class="relative">
+            <input
+              v-model="newBorrow.MASACH"
+              type="text"
+              placeholder="Mã Sách"
+              class="input-field"
+            />
+          </div>
+
+          <div class="relative">
+            <input v-model="newBorrow.NGAYMUON" type="date" class="input-field" />
+          </div>
+
+          <div class="relative" v-if="isEditing">
+            <input v-model="newBorrow.NGAYTRA" type="date" class="input-field" />
+          </div>
+        </div>
+
+        <div class="flex justify-between mt-6">
+          <button
+            @click="isEditing ? updateBorrow() : addBorrow()"
+            class="bg-c2 text-white px-4 py-2 rounded-full hover:bg-blue-700 transition"
+          >
+            ✔ Lưu
+          </button>
+          <button
+            @click="closeModal"
+            class="bg-red-700 text-white px-4 py-2 rounded-full hover:bg-red-800 transition"
+          >
+            ✖ Hủy
+          </button>
         </div>
       </div>
     </div>
@@ -70,12 +132,13 @@
 <script>
 import axios from 'axios'
 import { mapState } from 'vuex'
+
 export default {
   name: 'Borrows',
-
   data() {
     return {
       borrows: [],
+      searchQuery: '',
       showModal: false,
       isEditing: false,
       newBorrow: {
@@ -84,7 +147,6 @@ export default {
         NGAYMUON: '',
         NGAYTRA: '',
       },
-      searchQuery: '', // Thêm biến tìm kiếm
     }
   },
   computed: {
@@ -99,6 +161,9 @@ export default {
     },
   },
   methods: {
+    formatDate(date) {
+      return date ? new Date(date).toLocaleDateString('vi-VN') : 'Chưa trả'
+    },
     async fetchBorrows() {
       try {
         const response = await axios.get('http://localhost:5000/api/theodoimuonsach')
@@ -107,65 +172,17 @@ export default {
         console.error('Lỗi tải danh sách mượn sách:', error)
       }
     },
-
-    //kiem tra ma doc gia truoc khi muon
-    async checkReaderExists(MADOCGIA) {
-      try {
-        const response = await axios.get(`http://localhost:5000/api/docgia/${MADOCGIA}`)
-        return response.data // Trả về `true` nếu độc giả tồn tại, `false` nếu không
-      } catch (error) {
-        console.error('Lỗi kiểm tra mã độc giả:', error)
-        return false
-      }
-    },
-
-    async checkBookExists(MASACH) {
-      try {
-        const response = await axios.get(`http://localhost:5000/api/sach/${MASACH}`)
-        return response.data // Trả về `true` nếu sách tồn tại, `false` nếu không
-      } catch (error) {
-        console.error('Lỗi kiểm tra mã sách:', error)
-        return false
-      }
-    },
-
     async addBorrow() {
-      if (!this.newBorrow.MADOCGIA || !this.newBorrow.MASACH || !this.newBorrow.NGAYMUON) {
-        alert('Vui lòng nhập đầy đủ thông tin!')
-        return
-      }
-
-      // Kiểm tra độc giả có tồn tại không
-      const readerExists = await this.checkReaderExists(this.newBorrow.MADOCGIA)
-      if (!readerExists) {
-        alert('Mã độc giả không tồn tại! Vui lòng kiểm tra lại.')
-        return
-      }
-
-      // Kiểm tra sách có tồn tại không
-      const book = await this.checkBookExists(this.newBorrow.MASACH)
-      if (!book) {
-        alert('Mã sách không tồn tại! Vui lòng kiểm tra lại.')
-        return
-      }
-
-      // Kiểm tra số lượng sách
-      if (book.SOQUYEN <= 0) {
-        alert('Sách đã hết, không thể mượn!')
-        return
-      }
-
       try {
         await axios.post('http://localhost:5000/api/theodoimuonsach/', this.newBorrow)
-        this.fetchBorrows() // Tải lại danh sách
-        alert('Mượn sách thành công!')
+        this.fetchBorrows()
         this.closeModal()
+        alert('Mượn sách thành công!')
       } catch (error) {
         console.error('Lỗi khi thêm lượt mượn:', error)
-        alert(error.response?.data?.message || 'Lỗi hệ thống, thử lại sau!')
+        alert('Có lỗi xảy ra, vui lòng thử lại!')
       }
     },
-
     async deleteBorrow(MADOCGIA, MASACH) {
       if (confirm('Bạn có chắc chắn muốn xóa lượt mượn này?')) {
         try {
@@ -183,37 +200,19 @@ export default {
     },
     async updateBorrow() {
       try {
-        const updatedBorrow = {
-          NGAYTRA: this.newBorrow.NGAYTRA,
-        }
-
         await axios.put(
           `http://localhost:5000/api/theodoimuonsach/${this.newBorrow.MADOCGIA}/${this.newBorrow.MASACH}`,
-          updatedBorrow,
+          this.newBorrow,
         )
-
         this.fetchBorrows()
         this.closeModal()
         alert('Cập nhật lượt mượn thành công!')
       } catch (error) {
         console.error('Lỗi khi cập nhật lượt mượn:', error)
-        alert('Có lỗi xảy ra khi cập nhật lượt mượn. Vui lòng thử lại!')
       }
     },
-    formatDate(date) {
-      return date ? new Date(date).toLocaleDateString('vi-VN') : 'Chưa trả'
-    },
-
     openModal() {
       this.isEditing = false
-
-      this.newBorrow = {
-        MADOCGIA: '',
-        MASACH: '',
-        NGAYMUON: '',
-        NGAYTRA: '',
-      }
-
       this.showModal = true
     },
     closeModal() {
@@ -227,31 +226,7 @@ export default {
 </script>
 
 <style scoped>
-.btn {
-  @apply bg-blue-500 text-white px-4 py-2 rounded-lg shadow-md hover:bg-blue-700 transition;
-}
-
-.btn-add {
-  @apply bg-green-500 hover:bg-green-700;
-}
-
-.btn-edit {
-  @apply bg-yellow-500 hover:bg-yellow-700 mx-1;
-}
-
-.btn-delete {
-  @apply bg-red-500 hover:bg-red-700;
-}
-
-.input {
-  @apply w-full border p-2 mb-2 rounded-lg;
-}
-
-.modal {
-  @apply fixed top-0 left-0 w-full h-full flex items-center justify-center bg-gray-900 bg-opacity-50;
-}
-
-.modal-content {
-  @apply bg-white p-6 rounded-lg shadow-lg w-96;
+.input-field {
+  @apply w-full px-4 py-2 border rounded-full focus:ring-2 focus:ring-blue-400 focus:outline-none transition;
 }
 </style>
