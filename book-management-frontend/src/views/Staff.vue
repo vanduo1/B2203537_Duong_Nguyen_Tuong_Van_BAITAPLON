@@ -1,62 +1,148 @@
 <template>
-  <div class="p-6">
-    <h1 class="text-2xl font-bold text-gray-800 mb-4">📋 Danh Sách Nhân Viên</h1>
+  <div class="p-32">
+    <h1 class="text-3xl font-bold text-gray-800 mb-4 text-center">
+      <i class="fa-solid fa-users"></i> Danh Sách Nhân Viên
+    </h1>
 
-    <!-- Ô tìm kiếm nhân viên -->
+    <!-- Thanh tìm kiếm -->
     <input
       v-model="searchQuery"
       type="text"
-      placeholder="🔍 Tìm kiếm nhân viên..."
-      class="input mb-4 w-full"
+      placeholder="🔎 Tìm kiếm theo Mã NV hoặc Họ Tên..."
+      class="input m-4 w-full p-3 rounded-full"
     />
 
-    <!-- Nút thêm nhân viên -->
-    <button @click="openModal" class="btn mb-4">➕ Thêm Nhân Viên</button>
+    <!-- Nút tải danh sách nhân viên -->
+    <button
+      @click="fetchStaffs"
+      class="font-extrabold my-4 mx-8 p-2 border-2 rounded-full py-2 px-5 border-c3 hover:bg-c3 hover:text-c1 transition ease-in-out duration-300"
+    >
+      <i class="fa-solid fa-rotate pr-4"></i>Tải danh sách
+    </button>
+
+    <!-- Chỉ Admin mới được thêm nhân viên -->
+    <button
+      @click="openModal"
+      class="font-extrabold text-c4 my-4 p-2 border-2 rounded-full py-2 px-5 border-c4 hover:bg-c4 hover:text-white transition ease-in-out duration-300"
+    >
+      <i class="fa-solid fa-plus"></i> Thêm Nhân Viên
+    </button>
 
     <!-- Bảng hiển thị nhân viên -->
-    <table class="w-full border-collapse border border-gray-300">
-      <thead>
-        <tr class="bg-gray-100">
-          <th class="border p-2">Mã NV</th>
-          <th class="border p-2">Họ Tên</th>
-          <th class="border p-2">Chức Vụ</th>
-          <th class="border p-2">Số Điện Thoại</th>
-          <th class="border p-2">Hành động</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="staff in filteredStaffs" :key="staff._id" class="text-center">
-          <td class="border p-2">{{ staff.MSNV }}</td>
-          <td class="border p-2">{{ staff.HoTenNV }}</td>
-          <td class="border p-2">{{ staff.ChucVu }}</td>
-          <td class="border p-2">{{ staff.SoDienThoai }}</td>
-          <td class="border p-2">
-            <button @click="editStaff(staff)" class="btn btn-edit">✏ Sửa</button>
-            <button @click="deleteStaff(staff.MSNV)" class="btn btn-delete">🗑 Xóa</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="overflow-x-auto m-8">
+      <table class="w-full border border-gray-300 shadow-md rounded-lg overflow-hidden">
+        <thead>
+          <tr class="bg-c1 text-c3 font-extrabold uppercase text-sm leading-normal">
+            <th class="py-3 px-6 text-left">Mã NV</th>
+            <th class="py-3 px-6 text-left">Họ Tên</th>
+            <th class="py-3 px-6 text-center">Chức Vụ</th>
+            <th class="py-3 px-6 text-center">Số Điện Thoại</th>
+            <th class="py-3 px-6 text-center">Hành động</th>
+          </tr>
+        </thead>
+        <tbody class="text-gray-700 text-sm font-normal">
+          <tr
+            v-for="staff in filteredStaffs"
+            :key="staff.MSNV"
+            class="border-b border-gray-200 hover:bg-gray-100 transition duration-200"
+          >
+            <td class="py-3 px-6 text-left">{{ staff.MSNV }}</td>
+            <td class="py-3 px-6 text-left">{{ staff.HoTenNV }}</td>
+            <td class="py-3 px-6 text-center">{{ staff.ChucVu }}</td>
+            <td class="py-3 px-6 text-center">{{ staff.SoDienThoai }}</td>
+            <td class="py-3 px-6 text-center">
+              <button
+                @click="editStaff(staff)"
+                class="text-c3 font-bold hover:text-blue-700 mx-2 border-2 p-2 rounded-2xl"
+              >
+                ✏ Sửa
+              </button>
+              <button
+                @click="deleteStaff(staff.MSNV)"
+                class="text-red-700 font-bold hover:text-red-400 mx-2 p-2 border-2 rounded-2xl"
+              >
+                🗑 Xóa
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
-    <!-- Form thêm nhân viên (Hiển thị khi openModal = true) -->
-    <div v-if="showModal" class="modal">
-      <div class="modal-content">
-        <h2 class="text-xl font-bold mb-4">➕ Thêm Nhân Viên</h2>
-        <input v-model="newStaff.MSNV" type="text" placeholder="Mã NV" class="input" />
-        <input v-model="newStaff.HoTenNV" type="text" placeholder="Họ Tên" class="input" />
-        <input v-model="newStaff.Password" type="password" placeholder="Mật khẩu" class="input" />
-        <input v-model="newStaff.ChucVu" type="text" placeholder="Chức Vụ" class="input" />
-        <input v-model="newStaff.DiaChi" type="text" placeholder="Địa Chỉ" class="input" />
-        <input
-          v-model="newStaff.SoDienThoai"
-          type="text"
-          placeholder="Số Điện Thoại"
-          class="input"
-        />
+    <!-- Form thêm / sửa nhân viên -->
+    <div
+      v-if="showModal"
+      class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-4"
+    >
+      <div class="bg-white p-6 rounded-2xl shadow-xl w-full max-w-md">
+        <h2 class="text-2xl font-bold mb-6 text-center text-gray-800">
+          {{ isEditing ? 'Chỉnh Sửa Nhân Viên' : 'Thêm Nhân Viên' }}
+        </h2>
+        <div class="space-y-4">
+          <div class="relative" v-if="!isEditing">
+            <label class="block text-gray-700 font-semibold">Mã NV</label>
+            <input v-model="newStaff.MSNV" type="text" placeholder="Mã NV" class="input-field" />
+          </div>
+          <div class="relative">
+            <label class="block text-gray-700 font-semibold">Họ Tên</label>
+            <input
+              v-model="newStaff.HoTenNV"
+              type="text"
+              placeholder="Họ Tên"
+              class="input-field"
+            />
+          </div>
+          <div class="relative" v-if="!isEditing">
+            <label class="block text-gray-700 font-semibold">Mật khẩu</label>
+            <input
+              v-model="newStaff.Password"
+              type="password"
+              placeholder="Mật khẩu"
+              class="input-field"
+            />
+          </div>
+          <div class="relative">
+            <label class="block text-gray-700 font-semibold">Chức Vụ</label>
+            <input
+              v-model="newStaff.ChucVu"
+              type="text"
+              placeholder="Chức Vụ"
+              class="input-field"
+            />
+          </div>
+          <div class="relative">
+            <label class="block text-gray-700 font-semibold">Địa Chỉ</label>
+            <input
+              v-model="newStaff.DiaChi"
+              type="text"
+              placeholder="Địa Chỉ"
+              class="input-field"
+            />
+          </div>
+          <div class="relative">
+            <label class="block text-gray-700 font-semibold">Số Điện Thoại</label>
+            <input
+              v-model="newStaff.SoDienThoai"
+              type="text"
+              placeholder="Số Điện Thoại"
+              class="input-field"
+            />
+          </div>
+        </div>
 
-        <div class="flex justify-between">
-          <button @click="isEditing ? updateStaff() : addStaff()" class="btn">✔ Lưu</button>
-          <button @click="closeModal" class="btn btn-delete">✖ Hủy</button>
+        <div class="flex justify-between mt-6">
+          <button
+            @click="isEditing ? updateStaff() : addStaff()"
+            class="bg-c2 text-white px-4 py-2 rounded-full hover:bg-blue-700 transition"
+          >
+            ✔ Lưu
+          </button>
+          <button
+            @click="closeModal"
+            class="bg-red-700 text-white px-4 py-2 rounded-full hover:bg-red-800 transition"
+          >
+            ✖ Hủy
+          </button>
         </div>
       </div>
     </div>
@@ -181,23 +267,7 @@ export default {
 </script>
 
 <style scoped>
-.btn {
-  @apply bg-blue-500 text-white px-4 py-2 rounded-lg shadow-md hover:bg-blue-700 transition;
-}
-
-.btn-delete {
-  @apply bg-red-500 hover:bg-red-700;
-}
-
-.input {
-  @apply w-full border p-2 mb-2 rounded-lg;
-}
-
-.modal {
-  @apply fixed top-0 left-0 w-full h-full flex items-center justify-center bg-gray-900 bg-opacity-50;
-}
-
-.modal-content {
-  @apply bg-white p-6 rounded-lg shadow-lg w-96;
+.input-field {
+  @apply w-full px-4 py-2 border rounded-full focus:ring-2 focus:ring-blue-400 focus:outline-none transition;
 }
 </style>

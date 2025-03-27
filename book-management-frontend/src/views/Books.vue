@@ -88,6 +88,7 @@
     </div>
 
     <!-- Form thêm / sửa sách -->
+    <!-- Form thêm / sửa sách -->
     <div
       v-if="showModal"
       class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-4"
@@ -98,11 +99,13 @@
         </h2>
 
         <div class="space-y-4">
-          <div class="relative">
+          <div class="relative" v-if="!isEditing">
+            <label class="font-semibold block mb-1">Mã Sách</label>
             <input v-model="newBook.MASACH" type="text" placeholder="Mã Sách" class="input-field" />
           </div>
 
           <div class="relative">
+            <label class="font-semibold block mb-1">Tên Sách</label>
             <input
               v-model="newBook.TENSACH"
               type="text"
@@ -112,6 +115,7 @@
           </div>
 
           <div class="relative">
+            <label class="font-semibold block mb-1">Đơn Giá</label>
             <input
               v-model="newBook.DONGIA"
               type="number"
@@ -121,6 +125,7 @@
           </div>
 
           <div class="relative">
+            <label class="font-semibold block mb-1">Số Quyển</label>
             <input
               v-model="newBook.SOQUYEN"
               type="number"
@@ -130,6 +135,7 @@
           </div>
 
           <div class="relative">
+            <label class="font-semibold block mb-1">Năm Xuất Bản</label>
             <input
               v-model="newBook.NAMXUATBAN"
               type="number"
@@ -139,10 +145,12 @@
           </div>
 
           <div class="relative">
+            <label class="font-semibold block mb-1">Mã NXB</label>
             <input v-model="newBook.MANXB" type="text" placeholder="Mã NXB" class="input-field" />
           </div>
 
           <div class="relative">
+            <label class="font-semibold block mb-1">Tác Giả</label>
             <input v-model="newBook.TACGIA" type="text" placeholder="Tác Giả" class="input-field" />
           </div>
         </div>

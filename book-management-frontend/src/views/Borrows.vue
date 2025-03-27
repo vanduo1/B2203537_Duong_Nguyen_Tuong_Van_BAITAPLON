@@ -83,29 +83,33 @@
         </h2>
 
         <div class="space-y-4">
-          <div class="relative">
+          <div class="relative" v-if="!isEditing">
+            <label class="block text-gray-700 font-bold mb-1">Mã Độc Giả</label>
             <input
               v-model="newBorrow.MADOCGIA"
               type="text"
-              placeholder="Mã Độc Giả"
+              placeholder="Nhập Mã Độc Giả"
               class="input-field"
             />
           </div>
 
-          <div class="relative">
+          <div class="relative" v-if="!isEditing">
+            <label class="block text-gray-700 font-bold mb-1">Mã Sách</label>
             <input
               v-model="newBorrow.MASACH"
               type="text"
-              placeholder="Mã Sách"
+              placeholder="Nhập Mã Sách"
               class="input-field"
             />
           </div>
 
-          <div class="relative">
+          <div class="relative" v-if="!isEditing">
+            <label class="block text-gray-700 font-bold mb-1">Ngày Mượn</label>
             <input v-model="newBorrow.NGAYMUON" type="date" class="input-field" />
           </div>
 
           <div class="relative" v-if="isEditing">
+            <label class="block text-gray-700 font-bold mb-1">Ngày Trả</label>
             <input v-model="newBorrow.NGAYTRA" type="date" class="input-field" />
           </div>
         </div>

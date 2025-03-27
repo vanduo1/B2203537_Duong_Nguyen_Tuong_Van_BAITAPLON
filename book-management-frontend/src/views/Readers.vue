@@ -1,75 +1,154 @@
 <template>
-  <div class="p-6">
-    <h1 class="text-2xl font-bold text-gray-800 mb-4">📚 Danh Sách Độc Giả</h1>
-    <!-- Ô tìm kiếm độc giả -->
+  <div class="p-32">
+    <h1 class="text-3xl font-bold text-gray-800 mb-4 text-center">
+      <i class="fa-solid fa-users"></i> Danh Sách Độc Giả
+    </h1>
+
+    <!-- Thanh tìm kiếm -->
     <input
       v-model="searchQuery"
       type="text"
-      placeholder="🔍 Tìm kiếm độc giả..."
-      class="input mb-4 w-full"
+      placeholder=" 🔎 Tìm kiếm theo Mã Độc Giả hoặc Tên..."
+      class="input m-4 w-full p-3 rounded-full"
     />
+
     <!-- Nút tải danh sách độc giả -->
-    <button @click="fetchReaders" class="btn mb-4">🔄 Tải danh sách</button>
-    <button @click="openModal" class="btn btn-add mb-4">➕ Thêm Độc Giả</button>
+    <button
+      @click="fetchReaders"
+      class="font-extrabold my-4 mx-8 p-2 border-2 rounded-full py-2 px-5 border-c3 hover:bg-c3 hover:text-c1 transition ease-in-out duration-300"
+    >
+      <i class="fa-solid fa-rotate pr-4"></i> Tải danh sách
+    </button>
+
+    <!-- Chỉ Admin mới được thêm độc giả -->
+    <button
+      v-if="isAdmin"
+      @click="openModal"
+      class="font-extrabold text-c4 my-4 p-2 border-2 rounded-full py-2 px-5 border-c4 hover:bg-c4 hover:text-white transition ease-in-out duration-300"
+    >
+      <i class="fa-solid fa-plus"></i> Thêm Độc Giả
+    </button>
 
     <!-- Bảng hiển thị độc giả -->
-    <table class="w-full border-collapse border border-gray-300">
-      <thead>
-        <tr class="bg-gray-100">
-          <th class="border p-2">Mã</th>
-          <th class="border p-2">Họ Lót</th>
-          <th class="border p-2">Tên</th>
-          <th class="border p-2">Ngày Sinh</th>
-          <th class="border p-2">Phái</th>
-          <th class="border p-2">Địa Chỉ</th>
-          <th class="border p-2">Điện Thoại</th>
-          <th class="border p-2">Hành động</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="reader in filteredReaders" :key="reader.MADOCGIA" class="text-center">
-          <td class="border p-2">{{ reader.MADOCGIA }}</td>
-          <td class="border p-2">{{ reader.HOLOT }}</td>
-          <td class="border p-2">{{ reader.TEN }}</td>
-          <td class="border p-2">{{ formatDate(reader.NGAYSINH) }}</td>
-          <td class="border p-2">{{ reader.PHAI === 'M' ? 'Nam' : 'Nữ' }}</td>
-          <td class="border p-2">{{ reader.DIACHI }}</td>
-          <td class="border p-2">{{ reader.DIENTHOAI }}</td>
-          <td class="border p-2">
-            <button @click="editReader(reader)" class="btn btn-edit">✏ Sửa</button>
-            <button v-if="isAdmin" @click="deleteReader(reader.MADOCGIA)" class="btn btn-delete">
-              🗑 Xóa
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="overflow-x-auto m-8">
+      <table class="w-full border border-gray-300 shadow-md rounded-lg overflow-hidden">
+        <thead>
+          <tr class="bg-c1 text-c3 font-extrabold uppercase text-sm leading-normal">
+            <th class="py-3 px-6 text-left">Mã</th>
+            <th class="py-3 px-6 text-left">Họ Lót</th>
+            <th class="py-3 px-6 text-left">Tên</th>
+            <th class="py-3 px-6 text-center">Ngày Sinh</th>
+            <th class="py-3 px-6 text-center">Phái</th>
+            <th class="py-3 px-6 text-center">Địa Chỉ</th>
+            <th class="py-3 px-6 text-center">Điện Thoại</th>
+            <th class="py-3 px-6 text-center">Hành động</th>
+          </tr>
+        </thead>
+        <tbody class="text-gray-700 text-sm font-normal">
+          <tr
+            v-for="reader in filteredReaders"
+            :key="reader.MADOCGIA"
+            class="border-b border-gray-200 hover:bg-gray-100 transition duration-200"
+          >
+            <td class="py-3 px-6 text-left">{{ reader.MADOCGIA }}</td>
+            <td class="py-3 px-6 text-left">{{ reader.HOLOT }}</td>
+            <td class="py-3 px-6 text-left">{{ reader.TEN }}</td>
+            <td class="py-3 px-6 text-center">{{ formatDate(reader.NGAYSINH) }}</td>
+            <td class="py-3 px-6 text-center">
+              {{ reader.PHAI === 'M' ? 'Nam' : 'Nữ' }}
+            </td>
+            <td class="py-3 px-6 text-center">{{ reader.DIACHI }}</td>
+            <td class="py-3 px-6 text-center">{{ reader.DIENTHOAI }}</td>
+            <td class="py-3 px-6 text-center">
+              <!-- Chỉ Admin mới có quyền sửa -->
+              <button
+                v-if="isAdmin"
+                @click="editReader(reader)"
+                class="text-c3 font-bold hover:text-blue-700 mx-2 border-2 p-2 rounded-2xl"
+              >
+                ✏ Sửa
+              </button>
+
+              <!-- Chỉ Admin mới có quyền xóa -->
+              <button
+                v-if="isAdmin"
+                @click="deleteReader(reader.MADOCGIA)"
+                class="text-red-700 font-bold hover:text-red-400 mx-2 p-2 border-2 rounded-2xl"
+              >
+                🗑 Xóa
+              </button>
+
+              <!-- Nhân viên chỉ có quyền xem -->
+              <span v-if="!isAdmin" class="text-gray-500">🔒 Chỉ đọc</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
     <!-- Form thêm / sửa độc giả -->
-    <div v-if="showModal" class="modal">
-      <div class="modal-content">
-        <h2 class="text-xl font-bold mb-4">
-          {{ isEditing ? '✏ Chỉnh Sửa Độc Giả' : '➕ Thêm Độc Giả' }}
+    <div
+      v-if="showModal"
+      class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-4"
+    >
+      <div class="bg-white p-6 rounded-2xl shadow-xl w-full max-w-md">
+        <h2 class="text-2xl font-bold mb-6 text-center text-gray-800">
+          {{ isEditing ? 'Chỉnh Sửa Độc Giả' : 'Thêm Độc Giả' }}
         </h2>
-        <input v-model="newReader.MADOCGIA" type="text" placeholder="Mã Độc Giả" class="input" />
-        <input v-model="newReader.HOLOT" type="text" placeholder="Họ Lót" class="input" />
-        <input v-model="newReader.TEN" type="text" placeholder="Tên" class="input" />
-        <input v-model="newReader.NGAYSINH" type="date" placeholder="Ngày Sinh" class="input" />
-        <select v-model="newReader.PHAI" class="input">
-          <option value="M">Nam</option>
-          <option value="F">Nữ</option>
-        </select>
-        <input v-model="newReader.DIACHI" type="text" placeholder="Địa Chỉ" class="input" />
-        <input
-          v-model="newReader.DIENTHOAI"
-          type="text"
-          placeholder="Số Điện Thoại"
-          class="input"
-        />
 
-        <div class="flex justify-between">
-          <button @click="isEditing ? updateReader() : addReader()" class="btn">✔ Lưu</button>
-          <button @click="closeModal" class="btn btn-delete">✖ Hủy</button>
+        <div class="space-y-4">
+          <div v-if="!isEditing">
+            <label class="font-bold text-gray-700">Mã Độc Giả</label>
+            <input v-model="newReader.MADOCGIA" type="text" class="input-field" />
+          </div>
+
+          <div>
+            <label class="font-bold text-gray-700">Họ Lót</label>
+            <input v-model="newReader.HOLOT" type="text" class="input-field" />
+          </div>
+
+          <div>
+            <label class="font-bold text-gray-700">Tên</label>
+            <input v-model="newReader.TEN" type="text" class="input-field" />
+          </div>
+
+          <div>
+            <label class="font-bold text-gray-700">Ngày Sinh</label>
+            <input v-model="newReader.NGAYSINH" type="date" class="input-field" />
+          </div>
+
+          <div>
+            <label class="font-bold text-gray-700">Giới Tính</label>
+            <select v-model="newReader.PHAI" class="input-field">
+              <option value="M">Nam</option>
+              <option value="F">Nữ</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="font-bold text-gray-700">Địa Chỉ</label>
+            <input v-model="newReader.DIACHI" type="text" class="input-field" />
+          </div>
+
+          <div>
+            <label class="font-bold text-gray-700">Số Điện Thoại</label>
+            <input v-model="newReader.DIENTHOAI" type="text" class="input-field" />
+          </div>
+        </div>
+
+        <div class="flex justify-between mt-6">
+          <button
+            @click="isEditing ? updateReader() : addReader()"
+            class="bg-c2 text-white px-4 py-2 rounded-full hover:bg-blue-700 transition"
+          >
+            ✔ Lưu
+          </button>
+          <button
+            @click="closeModal"
+            class="bg-red-700 text-white px-4 py-2 rounded-full hover:bg-red-800 transition"
+          >
+            ✖ Hủy
+          </button>
         </div>
       </div>
     </div>
@@ -209,31 +288,7 @@ export default {
 </script>
 
 <style scoped>
-.btn {
-  @apply bg-blue-500 text-white px-4 py-2 rounded-lg shadow-md hover:bg-blue-700 transition;
-}
-
-.btn-add {
-  @apply bg-green-500 hover:bg-green-700;
-}
-
-.btn-edit {
-  @apply bg-yellow-500 hover:bg-yellow-700 mx-1;
-}
-
-.btn-delete {
-  @apply bg-red-500 hover:bg-red-700;
-}
-
-.input {
-  @apply w-full border p-2 mb-2 rounded-lg;
-}
-
-.modal {
-  @apply fixed top-0 left-0 w-full h-full flex items-center justify-center bg-gray-900 bg-opacity-50;
-}
-
-.modal-content {
-  @apply bg-white p-6 rounded-lg shadow-lg w-96;
+.input-field {
+  @apply w-full px-4 py-2 border rounded-full focus:ring-2 focus:ring-blue-400 focus:outline-none transition;
 }
 </style>

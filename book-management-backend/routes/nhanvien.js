@@ -69,7 +69,7 @@ router.put("/:msnv", async (req, res) => {
     }
 
     const result = await nhanVienCollection.updateOne(
-      { msnv: req.params.MSNV },
+      { MSNV: req.params.msnv },
       { $set: updatedNhanVien }
     );
 
