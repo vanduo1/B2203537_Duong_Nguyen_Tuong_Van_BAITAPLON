@@ -1,7 +1,13 @@
 <template>
   <div class="p-6">
     <h1 class="text-2xl font-bold text-gray-800 mb-4">📚 Danh Sách Sách</h1>
-
+    <!-- Thanh tìm kiếm -->
+    <input
+      v-model="searchQuery"
+      type="text"
+      placeholder="🔍 Tìm kiếm theo Mã Sách hoặc Tên Sách..."
+      class="input mb-4 w-full"
+    />
     <!-- Nút tải danh sách sách -->
     <button @click="fetchBooks" class="btn mb-4">🔄 Tải danh sách</button>
 
@@ -23,16 +29,12 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="book in books" :key="book.MASACH" class="text-center">
+        <tr v-for="book in filteredBooks" :key="book.MASACH" class="text-center">
           <td class="border p-2">{{ book.MASACH }}</td>
           <td class="border p-2">{{ book.TENSACH }}</td>
           <td class="border p-2">{{ book.DONGIA }} VNĐ</td>
           <td class="border p-2">
-            <span v-if="book.SOQUYEN === 0">
-              "Hiện tại sách đã hết. <br />Bạn có thể mượn vào ngày <br />
-              <span class="text-red-500">{{ formatDate(book.NGAYTRA) }}</span> khi sách được trả
-              về."
-            </span>
+            <span v-if="book.SOQUYEN === 0"> "Hiện tại sách đã hết!" </span>
             <span v-else>{{ book.SOQUYEN }}</span>
           </td>
           <td class="border p-2">{{ book.NAMXUATBAN }}</td>
@@ -94,7 +96,8 @@ export default {
   name: 'Books',
   data() {
     return {
-      books: [],
+      books: [], // Danh sách sách gốc từ API
+      searchQuery: '', // Từ khóa tìm kiếm
       showModal: false,
       isEditing: false,
       newBook: {
@@ -115,6 +118,14 @@ export default {
     },
     isStaff() {
       return this.ChucVu === 'nhanvien'
+    },
+    // Lọc danh sách sách theo từ khóa tìm kiếm
+    filteredBooks() {
+      return this.books.filter(
+        (book) =>
+          book.MASACH.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+          book.TENSACH.toLowerCase().includes(this.searchQuery.toLowerCase()),
+      )
     },
   },
   methods: {

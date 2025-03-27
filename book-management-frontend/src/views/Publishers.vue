@@ -1,7 +1,13 @@
 <template>
   <div class="p-6">
     <h1 class="text-2xl font-bold text-gray-800 mb-4">🏢 Danh Sách Nhà Xuất Bản</h1>
-
+    <!-- Ô tìm kiếm -->
+    <input
+      v-model="searchQuery"
+      type="text"
+      placeholder="🔍 Tìm kiếm nhà xuất bản..."
+      class="input mb-4 w-full"
+    />
     <!-- 🔒 Chỉ admin mới thấy nút thêm -->
     <button v-if="isAdmin" @click="openModal" class="btn btn-add mb-4">➕ Thêm Nhà Xuất Bản</button>
 
@@ -15,7 +21,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="publisher in publishers" :key="publisher.MANXB" class="text-center">
+        <tr v-for="publisher in filteredPublishers" :key="publisher.MANXB" class="text-center">
           <td class="border p-2">{{ publisher.MANXB }}</td>
           <td class="border p-2">{{ publisher.TENNXB }}</td>
           <td class="border p-2">{{ publisher.DIACHI }}</td>
@@ -73,10 +79,18 @@ export default {
     isAdmin() {
       return this.ChucVu === 'quanly' // ✅ Kiểm tra quyền admin
     },
+    filteredPublishers() {
+      return this.publishers.filter(
+        (publisher) =>
+          publisher.MANXB.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+          publisher.TENNXB.toLowerCase().includes(this.searchQuery.toLowerCase()),
+      )
+    },
   },
   data() {
     return {
       publishers: [],
+      searchQuery: '', // Biến tìm kiếm
       showModal: false,
       isEditing: false,
       newPublisher: { MANXB: '', TENNXB: '', DIACHI: '' },

@@ -119,28 +119,4 @@ router.delete("/:MADOCGIA/:MASACH", async (req, res) => {
   }
 });
 
-// Lấy ngày trả gần nhất của một mã sách
-router.get("/next-return/:MASACH", async (req, res) => {
-  try {
-    const { MASACH } = req.params;
-
-    // Tìm bản ghi có NGAYTRA gần nhất (lớn hơn ngày hiện tại)
-    const today = new Date().toISOString().split("T")[0]; // Ngày hiện tại (YYYY-MM-DD)
-
-    const nextReturn = await muonSachCollection
-      .find({ MASACH, NGAYTRA: { $gte: today } }) // Chỉ lấy những bản ghi có ngày trả >= hôm nay
-      .sort({ NGAYTRA: 1 }) // Sắp xếp theo ngày trả tăng dần
-      .limit(1) // Lấy bản ghi sớm nhất
-      .toArray();
-
-    if (nextReturn.length === 0) {
-      return res.json({ message: "Chưa có lịch trả sách sắp tới" });
-    }
-
-    res.json({ nextReturnDate: nextReturn[0].NGAYTRA });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
-
 module.exports = router;

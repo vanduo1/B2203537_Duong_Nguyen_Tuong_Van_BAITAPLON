@@ -1,7 +1,13 @@
 <template>
   <div class="p-6">
     <h1 class="text-2xl font-bold text-gray-800 mb-4">📚 Theo Dõi Mượn Sách</h1>
-
+    <!-- Thanh tìm kiếm -->
+    <input
+      v-model="searchQuery"
+      type="text"
+      placeholder="🔍 Tìm kiếm theo Mã Độc Giả..."
+      class="input mb-4 w-full"
+    />
     <!-- Nút tải danh sách và thêm mới -->
     <button @click="fetchBorrows" class="btn mb-4">🔄 Tải danh sách</button>
     <button v-if="isLoggedIn" @click="openModal" class="btn btn-add mb-4">➕ Thêm Lượt Mượn</button>
@@ -19,7 +25,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="borrow in borrows" :key="borrow._id" class="text-center">
+        <tr v-for="borrow in filteredBorrows" :key="borrow._id" class="text-center">
           <td class="border p-2">{{ borrow.MADOCGIA }}</td>
           <td class="border p-2">{{ borrow.MASACH }}</td>
           <td class="border p-2">{{ formatDate(borrow.NGAYMUON) }}</td>
@@ -78,12 +84,18 @@ export default {
         NGAYMUON: '',
         NGAYTRA: '',
       },
+      searchQuery: '', // Thêm biến tìm kiếm
     }
   },
   computed: {
     ...mapState(['ChucVu']),
     isLoggedIn() {
       return this.ChucVu === 'quanly' || this.ChucVu === 'nhanvien'
+    },
+    filteredBorrows() {
+      return this.borrows.filter((borrow) =>
+        borrow.MADOCGIA.toLowerCase().includes(this.searchQuery.toLowerCase()),
+      )
     },
   },
   methods: {

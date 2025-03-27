@@ -1,7 +1,13 @@
 <template>
   <div class="p-6">
     <h1 class="text-2xl font-bold text-gray-800 mb-4">📚 Danh Sách Độc Giả</h1>
-
+    <!-- Ô tìm kiếm độc giả -->
+    <input
+      v-model="searchQuery"
+      type="text"
+      placeholder="🔍 Tìm kiếm độc giả..."
+      class="input mb-4 w-full"
+    />
     <!-- Nút tải danh sách độc giả -->
     <button @click="fetchReaders" class="btn mb-4">🔄 Tải danh sách</button>
     <button @click="openModal" class="btn btn-add mb-4">➕ Thêm Độc Giả</button>
@@ -21,7 +27,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="reader in readers" :key="reader.MADOCGIA" class="text-center">
+        <tr v-for="reader in filteredReaders" :key="reader.MADOCGIA" class="text-center">
           <td class="border p-2">{{ reader.MADOCGIA }}</td>
           <td class="border p-2">{{ reader.HOLOT }}</td>
           <td class="border p-2">{{ reader.TEN }}</td>
@@ -80,10 +86,19 @@ export default {
     isAdmin() {
       return this.ChucVu === 'quanly' // ✅ Chỉ admin có quyền xóa
     },
+    filteredReaders() {
+      return this.readers.filter(
+        (reader) =>
+          reader.MADOCGIA.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+          reader.HOLOT.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+          reader.TEN.toLowerCase().includes(this.searchQuery.toLowerCase()),
+      )
+    },
   },
   data() {
     return {
       readers: [],
+      searchQuery: '', // Biến tìm kiếm
       showModal: false,
       isEditing: false,
       newReader: {

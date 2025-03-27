@@ -2,6 +2,14 @@
   <div class="p-6">
     <h1 class="text-2xl font-bold text-gray-800 mb-4">📋 Danh Sách Nhân Viên</h1>
 
+    <!-- Ô tìm kiếm nhân viên -->
+    <input
+      v-model="searchQuery"
+      type="text"
+      placeholder="🔍 Tìm kiếm nhân viên..."
+      class="input mb-4 w-full"
+    />
+
     <!-- Nút thêm nhân viên -->
     <button @click="openModal" class="btn mb-4">➕ Thêm Nhân Viên</button>
 
@@ -17,7 +25,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="staff in staffs" :key="staff._id" class="text-center">
+        <tr v-for="staff in filteredStaffs" :key="staff._id" class="text-center">
           <td class="border p-2">{{ staff.MSNV }}</td>
           <td class="border p-2">{{ staff.HoTenNV }}</td>
           <td class="border p-2">{{ staff.ChucVu }}</td>
@@ -63,6 +71,7 @@ export default {
   data() {
     return {
       staffs: [],
+      searchQuery: '', // Biến tìm kiếm
       showModal: false,
       isEditing: false,
       newStaff: {
@@ -74,6 +83,16 @@ export default {
         SoDienThoai: '',
       },
     }
+  },
+  computed: {
+    filteredStaffs() {
+      return this.staffs.filter(
+        (staff) =>
+          staff.MSNV.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+          staff.HoTenNV.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+          staff.ChucVu.toLowerCase().includes(this.searchQuery.toLowerCase()),
+      )
+    },
   },
   methods: {
     async fetchStaffs() {
