@@ -31,7 +31,9 @@
           <td class="border p-2">{{ reader.DIENTHOAI }}</td>
           <td class="border p-2">
             <button @click="editReader(reader)" class="btn btn-edit">✏ Sửa</button>
-            <button @click="deleteReader(reader.MADOCGIA)" class="btn btn-delete">🗑 Xóa</button>
+            <button v-if="isAdmin" @click="deleteReader(reader.MADOCGIA)" class="btn btn-delete">
+              🗑 Xóa
+            </button>
           </td>
         </tr>
       </tbody>
@@ -70,9 +72,15 @@
 
 <script>
 import axios from 'axios'
-
+import { mapState } from 'vuex'
 export default {
   name: 'Readers',
+  computed: {
+    ...mapState(['ChucVu']),
+    isAdmin() {
+      return this.ChucVu === 'quanly' // ✅ Chỉ admin có quyền xóa
+    },
+  },
   data() {
     return {
       readers: [],

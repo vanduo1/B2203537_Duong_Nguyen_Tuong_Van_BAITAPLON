@@ -4,7 +4,9 @@
 
     <!-- Nút tải danh sách sách -->
     <button @click="fetchBooks" class="btn mb-4">🔄 Tải danh sách</button>
-    <button @click="openModal" class="btn btn-add mb-4">➕ Thêm Sách</button>
+
+    <!-- Chỉ Admin và Nhân viên mới được thêm sách -->
+    <button v-if="isAdmin" @click="openModal" class="btn btn-add mb-4">➕ Thêm Sách</button>
 
     <!-- Bảng hiển thị sách -->
     <table class="w-full border-collapse border border-gray-300">
@@ -30,8 +32,15 @@
           <td class="border p-2">{{ book.MANXB }}</td>
           <td class="border p-2">{{ book.TACGIA }}</td>
           <td class="border p-2">
-            <button @click="editBook(book)" class="btn btn-edit">✏ Sửa</button>
-            <button @click="deleteBook(book.MASACH)" class="btn btn-delete">🗑 Xóa</button>
+            <!-- Chỉ Admin và Nhân viên mới có quyền sửa -->
+            <button v-if="isAdmin" @click="editBook(book)" class="btn btn-edit">✏ Sửa</button>
+
+            <!-- Chỉ Admin mới có quyền xóa -->
+            <button v-if="isAdmin" @click="deleteBook(book.MASACH)" class="btn btn-delete">
+              🗑 Xóa
+            </button>
+            <!-- 👀 Nếu là nhân viên, hiển thị trạng thái "Chỉ đọc" -->
+            <span v-if="!isAdmin" class="text-gray-500">🔒 Chỉ đọc</span>
           </td>
         </tr>
       </tbody>
@@ -72,6 +81,7 @@
 
 <script>
 import axios from 'axios'
+import { mapState } from 'vuex'
 
 export default {
   name: 'Books',
@@ -90,6 +100,15 @@ export default {
         TACGIA: '',
       },
     }
+  },
+  computed: {
+    ...mapState(['ChucVu']),
+    isAdmin() {
+      return this.ChucVu === 'quanly'
+    },
+    isStaff() {
+      return this.ChucVu === 'nhanvien'
+    },
   },
   methods: {
     async fetchBooks() {
@@ -124,7 +143,6 @@ export default {
       this.newBook = { ...book }
       this.showModal = true
     },
-
     async updateBook() {
       try {
         if (
@@ -159,7 +177,6 @@ export default {
         alert('Có lỗi xảy ra khi cập nhật sách. Vui lòng thử lại!')
       }
     },
-
     openModal() {
       this.isEditing = false
       this.newBook = {

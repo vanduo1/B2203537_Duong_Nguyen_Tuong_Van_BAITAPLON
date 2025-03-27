@@ -43,7 +43,7 @@ router.post("/", async (req, res) => {
 
     // Tạo JWT token
     const token = generateToken(nhanVien);
-    res.json({ token, ChucVu: nhanVien.ChucVu });
+    res.json({ token, ChucVu: nhanVien.ChucVu, HoTenNV: nhanVien.HoTenNV });
   } catch (err) {
     console.error("❌ Lỗi đăng nhập:", err);
     res.status(500).json({ message: "Lỗi máy chủ!" });

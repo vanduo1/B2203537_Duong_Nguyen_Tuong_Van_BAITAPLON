@@ -4,7 +4,7 @@
 
     <!-- Nút tải danh sách và thêm mới -->
     <button @click="fetchBorrows" class="btn mb-4">🔄 Tải danh sách</button>
-    <button @click="openModal" class="btn btn-add mb-4">➕ Thêm Lượt Mượn</button>
+    <button v-if="isLoggedIn" @click="openModal" class="btn btn-add mb-4">➕ Thêm Lượt Mượn</button>
 
     <!-- Bảng hiển thị lịch sử mượn sách -->
     <table class="w-full border-collapse border border-gray-300">
@@ -14,7 +14,8 @@
           <th class="border p-2">Mã Sách</th>
           <th class="border p-2">Ngày Mượn</th>
           <th class="border p-2">Ngày Trả</th>
-          <th class="border p-2">Hành động</th>
+          <th v-if="isLoggedIn" class="border p-2">Hành động</th>
+          <!-- Ẩn nếu chưa đăng nhập -->
         </tr>
       </thead>
       <tbody>
@@ -23,7 +24,7 @@
           <td class="border p-2">{{ borrow.MASACH }}</td>
           <td class="border p-2">{{ formatDate(borrow.NGAYMUON) }}</td>
           <td class="border p-2">{{ borrow.NGAYTRA ? formatDate(borrow.NGAYTRA) : 'Chưa trả' }}</td>
-          <td class="border p-2">
+          <td v-if="isLoggedIn" class="border p-2">
             <button @click="editBorrow(borrow)" class="btn btn-edit">✏ Cập nhật</button>
             <button @click="deleteBorrow(borrow.MADOCGIA, borrow.MASACH)" class="btn btn-delete">
               🗑 Xóa
@@ -61,9 +62,10 @@
 
 <script>
 import axios from 'axios'
-
+import { mapState } from 'vuex'
 export default {
   name: 'Borrows',
+
   data() {
     return {
       borrows: [],
@@ -76,6 +78,12 @@ export default {
         NGAYTRA: '',
       },
     }
+  },
+  computed: {
+    ...mapState(['ChucVu']),
+    isLoggedIn() {
+      return this.ChucVu === 'quanly' || this.ChucVu === 'nhanvien'
+    },
   },
   methods: {
     async fetchBorrows() {

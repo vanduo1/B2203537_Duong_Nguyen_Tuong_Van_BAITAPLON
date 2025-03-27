@@ -2,7 +2,8 @@
   <div class="p-6">
     <h1 class="text-2xl font-bold text-gray-800 mb-4">🏢 Danh Sách Nhà Xuất Bản</h1>
 
-    <button @click="openModal" class="btn btn-add mb-4">➕ Thêm Nhà Xuất Bản</button>
+    <!-- 🔒 Chỉ admin mới thấy nút thêm -->
+    <button v-if="isAdmin" @click="openModal" class="btn btn-add mb-4">➕ Thêm Nhà Xuất Bản</button>
 
     <table class="w-full border-collapse border border-gray-300">
       <thead>
@@ -19,15 +20,23 @@
           <td class="border p-2">{{ publisher.TENNXB }}</td>
           <td class="border p-2">{{ publisher.DIACHI }}</td>
           <td class="border p-2">
-            <button @click="editPublisher(publisher)" class="btn btn-edit">✏ Sửa</button>
-            <button @click="deletePublisher(publisher.MANXB)" class="btn btn-delete">🗑 Xóa</button>
+            <!-- 🔒 Chỉ admin mới thấy các nút sửa / xóa -->
+            <button v-if="isAdmin" @click="editPublisher(publisher)" class="btn btn-edit">
+              ✏ Sửa
+            </button>
+            <button v-if="isAdmin" @click="deletePublisher(publisher.MANXB)" class="btn btn-delete">
+              🗑 Xóa
+            </button>
+
+            <!-- 👀 Nếu là nhân viên, hiển thị trạng thái "Chỉ đọc" -->
+            <span v-if="!isAdmin" class="text-gray-500">🔒 Chỉ đọc</span>
           </td>
         </tr>
       </tbody>
     </table>
 
-    <!-- Form thêm / sửa nhà xuất bản -->
-    <div v-if="showModal" class="modal">
+    <!-- Form thêm / sửa nhà xuất bản (chỉ admin mới mở được) -->
+    <div v-if="showModal && isAdmin" class="modal">
       <div class="modal-content">
         <h2 class="text-xl font-bold mb-4">
           {{ isEditing ? '✏ Chỉnh Sửa Nhà Xuất Bản' : '➕ Thêm Nhà Xuất Bản' }}
@@ -54,20 +63,23 @@
 </template>
 
 <script>
+import { mapState } from 'vuex'
 import axios from 'axios'
 
 export default {
   name: 'Publishers',
+  computed: {
+    ...mapState(['ChucVu']),
+    isAdmin() {
+      return this.ChucVu === 'quanly' // ✅ Kiểm tra quyền admin
+    },
+  },
   data() {
     return {
       publishers: [],
       showModal: false,
       isEditing: false,
-      newPublisher: {
-        MANXB: '',
-        TENNXB: '',
-        DIACHI: '',
-      },
+      newPublisher: { MANXB: '', TENNXB: '', DIACHI: '' },
     }
   },
   methods: {
@@ -95,6 +107,7 @@ export default {
       }
     },
     async deletePublisher(id) {
+      if (!this.isAdmin) return // 🔒 Chặn nhân viên thực hiện xóa
       if (confirm('Bạn có chắc chắn muốn xóa nhà xuất bản này?')) {
         try {
           await axios.delete(`http://localhost:5000/api/nhaxuatban/${id}`)
@@ -107,36 +120,13 @@ export default {
       }
     },
     editPublisher(publisher) {
+      if (!this.isAdmin) return // 🔒 Chặn nhân viên sửa
       this.isEditing = true
       this.newPublisher = { ...publisher }
       this.showModal = true
     },
-    async updatePublisher() {
-      if (!this.newPublisher.TENNXB || !this.newPublisher.DIACHI) {
-        alert('Vui lòng nhập đầy đủ thông tin.')
-        return
-      }
-
-      try {
-        const updatedPublisher = {
-          TENNXB: this.newPublisher.TENNXB,
-          DIACHI: this.newPublisher.DIACHI,
-        }
-
-        await axios.put(
-          `http://localhost:5000/api/nhaxuatban/${this.newPublisher.MANXB}`,
-          updatedPublisher,
-        )
-
-        this.fetchPublishers()
-        this.closeModal()
-        alert('Cập nhật nhà xuất bản thành công!')
-      } catch (error) {
-        console.error('Lỗi khi cập nhật nhà xuất bản:', error)
-        alert('Có lỗi xảy ra khi cập nhật nhà xuất bản!')
-      }
-    },
     openModal() {
+      if (!this.isAdmin) return // 🔒 Chặn nhân viên mở form thêm
       this.isEditing = false
       this.newPublisher = { MANXB: '', TENNXB: '', DIACHI: '' }
       this.showModal = true

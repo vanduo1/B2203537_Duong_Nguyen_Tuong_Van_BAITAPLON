@@ -8,7 +8,7 @@
 </template>
 
 <script>
-import axios from 'axios'
+import api from '../utils/axiosInstance'
 import { mapMutations } from 'vuex'
 
 export default {
@@ -16,13 +16,14 @@ export default {
     return {
       msnv: '',
       password: '',
+      hotennv: '',
     }
   },
   methods: {
-    ...mapMutations(['setAuth']), // Sử dụng Vuex Mutation
+    ...mapMutations(['setAuth']),
     async login() {
       try {
-        const response = await axios.post('http://localhost:5000/login', {
+        const response = await api.post('/login', {
           MSNV: this.msnv,
           Password: this.password,
         })
@@ -30,13 +31,10 @@ export default {
         this.setAuth({
           token: response.data.token,
           ChucVu: response.data.ChucVu,
+          HoTenNV: response.data.HoTenNV,
         })
 
-        if (response.data.ChucVu === 'nhanvien') {
-          this.$router.push('/staff')
-        } else {
-          this.$router.push('/books')
-        }
+        this.$router.push(response.data.ChucVu === 'nhanvien' ? '/staff' : '/books')
       } catch (error) {
         console.error('Đăng nhập thất bại:', error)
       }
