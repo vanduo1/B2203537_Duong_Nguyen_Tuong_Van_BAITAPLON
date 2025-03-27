@@ -31,7 +31,7 @@ router.get("/:maSach", async (req, res) => {
   try {
     const book = await sachCollection.findOne({ MASACH: req.params.maSach });
     if (!book) {
-      return res.status(404).json({ message: "Không tìm thấy sách" });
+      return res.status(404).json({ message: "Mã Sách không tồn tại" });
     }
     res.json(book);
   } catch (err) {

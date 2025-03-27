@@ -34,7 +34,7 @@ router.get("/:maDocGia", async (req, res) => {
       MADOCGIA: req.params.maDocGia,
     });
     if (!docGia) {
-      return res.status(404).json({ message: "Không tìm thấy độc giả" });
+      return res.status(404).json({ message: "Mã Độc Giả không tồn tại" });
     }
     res.json(docGia);
   } catch (err) {

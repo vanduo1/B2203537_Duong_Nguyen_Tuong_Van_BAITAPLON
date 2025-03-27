@@ -61,7 +61,7 @@
                 ✏ Cập nhật
               </button>
               <button
-                @click="deleteBorrow(borrow.MADOCGIA, borrow.MASACH)"
+                @click="deleteBorrow(borrow.MADOCGIA, borrow.MASACH, borrow.NGAYMUON)"
                 class="text-red-700 font-bold hover:text-red-400 mx-2 p-2 border-2 rounded-2xl"
               >
                 🗑 Xóa
@@ -178,25 +178,68 @@ export default {
     },
     async addBorrow() {
       try {
+        // Kiểm tra dữ liệu đầu vào
+        if (!this.newBorrow.MADOCGIA || !this.newBorrow.MASACH || !this.newBorrow.NGAYMUON) {
+          alert('Vui lòng nhập đầy đủ thông tin!')
+          return
+        }
+
+        // Kiểm tra Mã Độc Giả
+        let docGiaExists = true
+        try {
+          await axios.get(`http://localhost:5000/api/docgia/${this.newBorrow.MADOCGIA}`)
+        } catch (error) {
+          if (error.response && error.response.status === 404) {
+            docGiaExists = false
+          }
+        }
+
+        if (!docGiaExists) {
+          alert('Mã Độc Giả không tồn tại!')
+          return
+        }
+
+        // Kiểm tra Mã Sách
+        let sachExists = true
+        try {
+          await axios.get(`http://localhost:5000/api/sach/${this.newBorrow.MASACH}`)
+        } catch (error) {
+          if (error.response && error.response.status === 404) {
+            sachExists = false
+          }
+        }
+
+        if (!sachExists) {
+          alert('Mã Sách không tồn tại!')
+          return
+        }
+
+        // Nếu cả hai mã đều hợp lệ, tiến hành thêm lượt mượn
         await axios.post('http://localhost:5000/api/theodoimuonsach/', this.newBorrow)
+
         this.fetchBorrows()
         this.closeModal()
         alert('Mượn sách thành công!')
       } catch (error) {
-        console.error('Lỗi khi thêm lượt mượn:', error)
         alert('Có lỗi xảy ra, vui lòng thử lại!')
       }
     },
-    async deleteBorrow(MADOCGIA, MASACH) {
+    async deleteBorrow(MADOCGIA, MASACH, NGAYMUON) {
       if (confirm('Bạn có chắc chắn muốn xóa lượt mượn này?')) {
         try {
-          await axios.delete(`http://localhost:5000/api/theodoimuonsach/${MADOCGIA}/${MASACH}`)
+          const encodedNgayMuon = encodeURIComponent(NGAYMUON)
+          await axios.delete(
+            `http://localhost:5000/api/theodoimuonsach/${MADOCGIA}/${MASACH}/${encodedNgayMuon}`,
+          )
           this.fetchBorrows()
+          alert('Xóa lượt mượn thành công!')
         } catch (error) {
           console.error('Lỗi khi xóa lượt mượn:', error)
+          alert('Không thể xóa lượt mượn. Vui lòng thử lại!')
         }
       }
     },
+
     editBorrow(borrow) {
       this.isEditing = true
       this.newBorrow = { ...borrow }
@@ -204,15 +247,26 @@ export default {
     },
     async updateBorrow() {
       try {
-        await axios.put(
-          `http://localhost:5000/api/theodoimuonsach/${this.newBorrow.MADOCGIA}/${this.newBorrow.MASACH}`,
-          this.newBorrow,
+        if (!this.newBorrow.NGAYTRA) {
+          alert('Vui lòng chọn ngày trả trước khi cập nhật.')
+          return
+        }
+
+        const encodedNgayMuon = encodeURIComponent(this.newBorrow.NGAYMUON)
+        const response = await axios.put(
+          `http://localhost:5000/api/theodoimuonsach/${this.newBorrow.MADOCGIA}/${this.newBorrow.MASACH}/${encodedNgayMuon}`,
+          { NGAYTRA: this.newBorrow.NGAYTRA }, // Chỉ gửi ngày trả
         )
-        this.fetchBorrows()
-        this.closeModal()
-        alert('Cập nhật lượt mượn thành công!')
+
+        if (response.data.message) {
+          alert(response.data.message)
+        }
+
+        this.fetchBorrows() // Cập nhật danh sách sau khi chỉnh sửa
+        this.closeModal() // Đóng modal sau khi cập nhật thành công
       } catch (error) {
         console.error('Lỗi khi cập nhật lượt mượn:', error)
+        alert('Có lỗi xảy ra khi cập nhật lượt mượn. Vui lòng thử lại!')
       }
     },
     openModal() {

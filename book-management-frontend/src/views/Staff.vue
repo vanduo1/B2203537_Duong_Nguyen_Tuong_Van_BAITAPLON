@@ -36,7 +36,9 @@
             <th class="py-3 px-6 text-left">Mã NV</th>
             <th class="py-3 px-6 text-left">Họ Tên</th>
             <th class="py-3 px-6 text-center">Chức Vụ</th>
+            <th class="py-3 px-6 text-center">Địa chỉ</th>
             <th class="py-3 px-6 text-center">Số Điện Thoại</th>
+
             <th class="py-3 px-6 text-center">Hành động</th>
           </tr>
         </thead>
@@ -49,6 +51,7 @@
             <td class="py-3 px-6 text-left">{{ staff.MSNV }}</td>
             <td class="py-3 px-6 text-left">{{ staff.HoTenNV }}</td>
             <td class="py-3 px-6 text-center">{{ staff.ChucVu }}</td>
+            <td class="py-3 px-6 text-center">{{ staff.DiaChi }}</td>
             <td class="py-3 px-6 text-center">{{ staff.SoDienThoai }}</td>
             <td class="py-3 px-6 text-center">
               <button

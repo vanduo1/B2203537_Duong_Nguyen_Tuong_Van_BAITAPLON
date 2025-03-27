@@ -63,47 +63,77 @@ router.post("/", async (req, res) => {
 });
 
 // Cập nhật ngày trả sách theo mã độc giả & mã sách
-router.put("/:MADOCGIA/:MASACH", async (req, res) => {
+
+router.put("/:MADOCGIA/:MASACH/:NGAYMUON", async (req, res) => {
   try {
     const { NGAYTRA } = req.body;
-    const result = await muonSachCollection.updateOne(
-      { MADOCGIA: req.params.MADOCGIA, MASACH: req.params.MASACH },
-      { $set: { NGAYTRA } }
-    );
+    const { MADOCGIA, MASACH, NGAYMUON } = req.params;
 
-    if (result.matchedCount === 0) {
-      return res
-        .status(404)
-        .json({ message: "Không tìm thấy giao dịch mượn sách" });
-    }
-    res.json({ message: "Cập nhật ngày trả sách thành công" });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
+    // Tìm giao dịch mượn sách cụ thể
+    const muonSach = await muonSachCollection.findOne({
+      MADOCGIA,
+      MASACH,
+      NGAYMUON,
+    });
 
-router.delete("/:MADOCGIA/:MASACH", async (req, res) => {
-  try {
-    const { MADOCGIA, MASACH } = req.params;
-
-    // 1️⃣ Kiểm tra xem giao dịch có tồn tại không
-    const muonSach = await muonSachCollection.findOne({ MADOCGIA, MASACH });
     if (!muonSach) {
       return res
         .status(404)
         .json({ message: "Không tìm thấy giao dịch mượn sách" });
     }
 
-    // 2️⃣ Xóa giao dịch mượn sách
-    const result = await muonSachCollection.deleteOne({ MADOCGIA, MASACH });
+    // Nếu sách chưa được trả (NGAYTRA hiện tại là null hoặc rỗng)
+    if (!muonSach.NGAYTRA) {
+      await sachCollection.updateOne(
+        { MASACH: MASACH },
+        { $inc: { SOQUYEN: 1 } }
+      );
+    }
+
+    // Cập nhật ngày trả sách
+    const result = await muonSachCollection.updateOne(
+      { MADOCGIA, MASACH, NGAYMUON },
+      { $set: { NGAYTRA } }
+    );
+
+    if (result.modifiedCount === 0) {
+      return res.json({ message: "Không có thay đổi nào được thực hiện" });
+    }
+
+    res.json({ message: "Cập nhật ngày trả sách thành công" });
+  } catch (err) {
+    res.status(500).json({ message: "Lỗi server: " + err.message });
+  }
+});
+
+router.delete("/:MADOCGIA/:MASACH/:NGAYMUON", async (req, res) => {
+  try {
+    const { MADOCGIA, MASACH, NGAYMUON } = req.params;
+
+    // Kiểm tra xem giao dịch có tồn tại không
+    const muonSach = await muonSachCollection.findOne({
+      MADOCGIA,
+      MASACH,
+      NGAYMUON,
+    });
+    if (!muonSach) {
+      return res
+        .status(404)
+        .json({ message: "Không tìm thấy giao dịch mượn sách" });
+    }
+
+    // Xóa giao dịch mượn sách
+    const result = await muonSachCollection.deleteOne({
+      MADOCGIA,
+      MASACH,
+      NGAYMUON,
+    });
     if (result.deletedCount === 0) {
       return res.status(500).json({ message: "Lỗi khi xóa giao dịch" });
     }
 
-    // 3️⃣ Kiểm tra nếu sách chưa được trả hoặc còn trong hạn mượn => Cập nhật số quyển
-    const today = new Date().toISOString().split("T")[0]; // Lấy ngày hiện tại (YYYY-MM-DD)
-
-    if (!muonSach.NGAYTRA || muonSach.NGAYTRA >= today) {
+    // Nếu sách chưa được trả thì tăng số lượng sách lên 1
+    if (!muonSach.NGAYTRA) {
       await sachCollection.updateOne({ MASACH }, { $inc: { SOQUYEN: 1 } });
       return res.json({
         message: "Xóa giao dịch thành công, số lượng sách đã cập nhật",
@@ -112,7 +142,7 @@ router.delete("/:MADOCGIA/:MASACH", async (req, res) => {
 
     res.json({
       message:
-        "Xóa giao dịch thành công (Lượt mượn cũ, không cập nhật số sách)",
+        "Xóa giao dịch thành công (Lượt mượn đã trả, không cập nhật số sách)",
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
